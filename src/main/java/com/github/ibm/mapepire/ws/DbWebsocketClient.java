@@ -1,19 +1,13 @@
 package com.github.ibm.mapepire.ws;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.io.UnsupportedEncodingException;
-import java.util.concurrent.CountDownLatch;
-
-import org.eclipse.jetty.websocket.api.Session;
-import org.eclipse.jetty.websocket.api.WebSocketAdapter;
-
 import com.github.ibm.mapepire.DataStreamProcessor;
 import com.github.ibm.mapepire.SystemConnection;
+import org.eclipse.jetty.websocket.api.Session;
+import org.eclipse.jetty.websocket.api.WebSocketAdapter;
 import org.eclipse.jetty.websocket.api.WebSocketException;
+
+import java.io.*;
+import java.util.concurrent.CountDownLatch;
 
 public class DbWebsocketClient extends WebSocketAdapter {
   private final CountDownLatch closureLatch = new CountDownLatch(1);
@@ -40,6 +34,7 @@ public class DbWebsocketClient extends WebSocketAdapter {
 
   @Override
   public void onWebSocketClose(int statusCode, String reason) {
+    System.out.println("Socket Disconnected: " + getSession());
     io.end();
     super.onWebSocketClose(statusCode, reason);
     closureLatch.countDown();
