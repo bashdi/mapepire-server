@@ -1,22 +1,17 @@
 package com.github.ibm.mapepire.requests;
 
-import java.sql.CallableStatement;
-import java.sql.ParameterMetaData;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.sql.Statement;
+import com.github.ibm.mapepire.ClientRequest;
+import com.github.ibm.mapepire.DataStreamProcessor;
+import com.github.ibm.mapepire.SystemConnection;
+import com.github.ibm.mapepire.TableRowMap;
+import com.google.gson.JsonObject;
+import com.ibm.as400.access.AS400JDBCParameterMetaData;
+
+import java.sql.*;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-
-import com.github.ibm.mapepire.ClientRequest;
-import com.github.ibm.mapepire.DataStreamProcessor;
-import com.github.ibm.mapepire.SystemConnection;
-import com.google.gson.JsonObject;
-import com.ibm.as400.access.AS400JDBCParameterMetaData;
 
 public abstract class BlockRetrievableRequest extends ClientRequest {
 
@@ -110,6 +105,13 @@ public abstract class BlockRetrievableRequest extends ClientRequest {
         if (_rs.isClosed()) {
             return ret.setDone(true);
         }
+
+        String[] columnNames = new String[ _rs.getMetaData().getColumnCount()];
+        ResultSetMetaData metaData = _rs.getMetaData();
+        for (int i = 0; i < columnNames.length; i++) {
+           columnNames[i] = metaData.getColumnName(i + 1);
+        }
+
         for (int i = 0; i < _numRows; ++i) {
             if (!_rs.next()) {
                 ret.setDone(true);
@@ -121,11 +123,10 @@ public abstract class BlockRetrievableRequest extends ClientRequest {
                 }
                 break;
             }
-            final LinkedHashMap<String, Object> mapRowData = new LinkedHashMap<String, Object>();
+            final Map<String, Object> mapRowData = new TableRowMap(columnNames);
             final LinkedList<Object> terseRowData = new LinkedList<Object>();
-            final int numCols = _rs.getMetaData().getColumnCount();
-            for (int col = 1; col <= numCols; ++col) {
-                String column = _rs.getMetaData().getColumnName(col);
+            for (int col = 1; col <= metaData.getColumnCount(); ++col) {
+                String column = metaData.getColumnName(col);
                 Object cellData = _rs.getObject(col);
                 Object cellDataForResponse = null;
                 if (null == cellData) {
