@@ -111,8 +111,9 @@ public abstract class BlockRetrievableRequest extends ClientRequest {
             return ret.setDone(true);
         }
 
-        String[] columnNames = new String[ _rs.getMetaData().getColumnCount()];
         ResultSetMetaData metaData = _rs.getMetaData();
+
+        String[] columnNames = new String[metaData.getColumnCount()];
         for (int i = 0; i < columnNames.length; i++) {
            columnNames[i] = metaData.getColumnName(i + 1);
         }
@@ -128,8 +129,15 @@ public abstract class BlockRetrievableRequest extends ClientRequest {
                 }
                 break;
             }
-            final Map<String, Object> mapRowData = new TableRowMap(columnNames);
-            final LinkedList<Object> terseRowData = new LinkedList<Object>();
+
+            Map<String, Object> mapRowData = null;
+            Object[] terseRowData = null;
+            if (_isTerseDataFormat) {
+                terseRowData = new Object[metaData.getColumnCount()];
+            } else {
+                mapRowData = new TableRowMap(columnNames);
+            }
+
             for (int col = 1; col <= metaData.getColumnCount(); ++col) {
                 String column = metaData.getColumnName(col);
                 Object cellData = _rs.getObject(col);
@@ -144,7 +152,7 @@ public abstract class BlockRetrievableRequest extends ClientRequest {
                     cellDataForResponse = _rs.getString(col);
                 }
                 if (_isTerseDataFormat) {
-                    terseRowData.add(cellDataForResponse);
+                    terseRowData[col - 1] = cellDataForResponse;
                 } else {
                     mapRowData.put(column, cellDataForResponse);
                 }
