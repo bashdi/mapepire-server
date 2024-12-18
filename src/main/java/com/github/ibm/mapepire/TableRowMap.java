@@ -111,11 +111,7 @@ public class TableRowMap implements Map<String, Object> {
 
     @Override
     public Set<Entry<String, Object>> entrySet() {
-        Set<Entry<String, Object>> set = new HashSet<>();
-        for (int i = 0; i < columnNames.length; i++) {
-            set.add(new AbstractMap.SimpleEntry<>(columnNames[i], values[i]));
-        }
-        return set;
+        return new TableRowSet(columnNames, values);
     }
 
 
