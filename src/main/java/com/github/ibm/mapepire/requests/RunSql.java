@@ -1,11 +1,11 @@
 package com.github.ibm.mapepire.requests;
 
-import java.sql.Connection;
-import java.sql.Statement;
-import java.util.List;
 import com.github.ibm.mapepire.DataStreamProcessor;
 import com.github.ibm.mapepire.SystemConnection;
 import com.google.gson.JsonObject;
+
+import java.sql.Connection;
+import java.sql.Statement;
 
 public class RunSql extends BlockRetrievableRequest {
 
@@ -25,7 +25,7 @@ public class RunSql extends BlockRetrievableRequest {
         if (hasRs) {
             m_rs = stmt.getResultSet();
             addReplyData("metadata", getResultMetaDataForResponse());
-            final List<Object> data = getNextDataBlock(numRows);
+            final Object[] data = getNextDataBlock(numRows);
             addReplyData("data", data);
             addReplyData("is_done", isDone());
         }

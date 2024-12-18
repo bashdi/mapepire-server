@@ -24,9 +24,9 @@ public abstract class BlockRetrievableRequest extends ClientRequest {
         m_isTerseData = getRequestFieldBoolean("terse", false);
     }
 
-    List<Object> getNextDataBlock(final int _numRows) throws SQLException {
+    Object[] getNextDataBlock(final int _numRows) throws SQLException {
         if (m_isDone) {
-            return new LinkedList<Object>();
+            return new Object[0];
         }
         DataBlockFetchResult result = getNextDataBlock(m_rs, _numRows, m_isTerseData);
         m_isDone = result.isDone();
@@ -74,8 +74,13 @@ public abstract class BlockRetrievableRequest extends ClientRequest {
     }
 
     protected static class DataBlockFetchResult {
-        private final List<Object> m_data = new LinkedList<Object>();
+        private final Object[] m_data;
         private boolean m_isDone = false;
+        private int rowCount;
+
+        public DataBlockFetchResult(int rows) {
+            m_data = new Object[rows];
+        }
 
         private DataBlockFetchResult setDone(final boolean _b) {
             m_isDone = _b;
@@ -87,17 +92,17 @@ public abstract class BlockRetrievableRequest extends ClientRequest {
         }
 
         private void add(final Object _o) {
-            m_data.add(_o);
+            m_data[rowCount++] = _o;
         }
 
-        public Object getData() {
+        public Object[] getData() {
             return m_data;
         }
     }
 
     protected static DataBlockFetchResult getNextDataBlock(final ResultSet _rs, final int _numRows,
             final boolean _isTerseDataFormat) throws SQLException {
-        final DataBlockFetchResult ret = new DataBlockFetchResult();
+        final DataBlockFetchResult ret = new DataBlockFetchResult(_numRows);
 
         if (null == _rs) {
             throw new SQLException("Result set was null");
